@@ -2,7 +2,7 @@
 
 ## 👥 Integrantes – Entrega 1
 - Breiner Andrés Vesga
-- (Agrega más si tienes grupo)
+
 
 ---
 
