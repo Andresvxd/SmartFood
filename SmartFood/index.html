@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+ 
+  <meta charset="UTF-8"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0"/>
+ 
+  <title>SmartFood – Sistema Inteligente de Pedidos</title>
+ 
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+ 
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+ 
+  <link rel="preconnect"
+        href="https://fonts.googleapis.com"/>
+ 
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet"/>
+ 
+  <link rel="stylesheet"
+        href="css/styles.css"/>
+ 
+</head>
+ 
+<body class="login-body">
+ 
+ 
+  <section class="hero-section d-flex align-items-center">
+ 
+    <div class="hero-overlay"></div>
+ 
+    <div class="container position-relative z-1">
+ 
+      <div class="row align-items-center min-vh-100 py-5">
+ 
+        
+        <div class="col-lg-6 text-white mb-5 mb-lg-0 animate-fade-left">
+ 
+          <span class="badge-pill mb-3">
+            🍔 Sistema Inteligente
+          </span>
+ 
+          <h1 class="hero-title">
+            Smart<span class="text-accent">Food</span>
+          </h1>
+ 
+          <p class="hero-subtitle">
+ 
+            Gestión de pedidos, menú y clientes
+            para restaurantes modernos.
+            Con IA, carrito inteligente
+            y pagos simulados.
+ 
+          </p>
+ 
+          <div class="d-flex gap-3 flex-wrap mt-4">
+ 
+            <div class="feature-chip">
+              <i class="bi bi-cart3"></i>
+              Carrito inteligente
+            </div>
+ 
+            <div class="feature-chip">
+              <i class="bi bi-robot"></i>
+              Chatbot IA
+            </div>
+ 
+            <div class="feature-chip">
+              <i class="bi bi-credit-card"></i>
+              Pago PSE
+            </div>
+ 
+            <div class="feature-chip">
+              <i class="bi bi-bar-chart"></i>
+              Reportes
+            </div>
+ 
+          </div>
+ 
+        </div>
+ 
+        <!-- LOGIN -->
+        <div class="col-lg-5 offset-lg-1 animate-fade-right">
+ 
+          <div class="login-card">
+ 
+            <div class="login-header">
+ 
+              <div class="login-logo">
+                🍽️
+              </div>
+ 
+              <h2>Bienvenido</h2>
+ 
+              <p>
+                Inicia sesión en SmartFood
+              </p>
+ 
+            </div>
+ 
+            <!-- ALERTA -->
+            <div id="loginAlert"
+                 class="alert alert-danger d-none"
+                 role="alert"></div>
+ 
+            <div class="login-body-inner">
+ 
+              
+              <div class="mb-3">
+ 
+                <label class="form-label">
+  Correo electrónico
+</label>
+ 
+                <div class="input-group sf-input-group">
+ 
+                  <span class="input-group-text">
+                    <i class="bi bi-person"></i>
+                  </span>
+ 
+                  <input type="email"
+       id="loginUser"
+       class="form-control sf-input"
+       placeholder="correo@ejemplo.com"/>
+ 
+                </div>
+ 
+              </div>
+ 
+              <!-- PASS -->
+              <div class="mb-3">
+ 
+                <label class="form-label">
+                  Contraseña
+                </label>
+ 
+                <div class="input-group sf-input-group">
+ 
+                  <span class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                  </span>
+ 
+                  <input type="password"
+                         id="loginPass"
+                         class="form-control sf-input"
+                         placeholder="••••••••"/>
+ 
+                  <button class="btn btn-outline-secondary"
+                          type="button"
+                          onclick="togglePass()">
+ 
+                    <i class="bi bi-eye"
+                       id="eyeIcon"></i>
+ 
+                  </button>
+ 
+                </div>
+ 
+                <div class="d-flex justify-content-end mt-1">
+ 
+                  <a href="#"
+                     class="text-accent small"
+                     onclick="showRecovery()">
+ 
+                    ¿Olvidaste tu contraseña?
+ 
+                  </a>
+ 
+                </div>
+ 
+              </div>
+ 
+              <!-- BTN LOGIN -->
+<button class="btn btn-sf w-100 mt-2"
+        onclick="handleLogin()">
+
+  <i class="bi bi-box-arrow-in-right me-2"></i>
+  Ingresar
+
+</button>
+
+<div class="text-center mt-3">
+
+  <span class="text-muted">
+    ¿No tienes una cuenta?
+  </span>
+
+  <br>
+
+  <a href="registro.html"
+     class="text-accent fw-bold text-decoration-none">
+
+     <i class="bi bi-person-plus me-1"></i>
+     Registrarse
+
+  </a>
+
+</div>
+ 
+              
+ 
+            </div>
+ 
+          </div>
+ 
+        </div>
+ 
+      </div>
+ 
+    </div>
+ 
+  </section>
+ 
+  <!-- MODAL -->
+  <div class="modal fade"
+       id="recoveryModal"
+       tabindex="-1">
+ 
+    <div class="modal-dialog modal-dialog-centered">
+ 
+      <div class="modal-content sf-modal">
+ 
+        <div class="modal-header border-0">
+ 
+          <h5 class="modal-title">
+ 
+            <i class="bi bi-envelope me-2"></i>
+            Recuperar contraseña
+ 
+          </h5>
+ 
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"></button>
+ 
+        </div>
+ 
+        <div class="modal-body">
+ 
+          <p class="text-muted small">
+ 
+            Ingresa tu correo y te enviaremos
+            las instrucciones.
+ 
+          </p>
+ 
+          <input type="email"
+                 class="form-control sf-input"
+                 placeholder="tucorreo@ejemplo.com"
+                 id="recoveryEmail"/>
+ 
+        </div>
+ 
+        <div class="modal-footer border-0">
+ 
+          <button class="btn btn-sf"
+                  onclick="sendRecovery()">
+ 
+            <i class="bi bi-send me-1"></i>
+            Enviar
+ 
+          </button>
+ 
+        </div>
+ 
+      </div>
+ 
+    </div>
+ 
+  </div>
+ 
+  <!-- TOAST -->
+  <div id="sfToast"></div>
+ 
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+function fillCred(usuario, password) {
+    document.getElementById('loginUser').value = usuario;
+    document.getElementById('loginPass').value = password;
+}
+
+function togglePass() {
+
+    const input = document.getElementById('loginPass');
+    const icon = document.getElementById('eyeIcon');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+}
+
+function showRecovery(event) {
+
+    if(event){
+        event.preventDefault();
+    }
+
+    const modal = new bootstrap.Modal(
+        document.getElementById('recoveryModal')
+    );
+
+    modal.show();
+}
+
+function showToast(message, success = true) {
+
+    const toast = document.getElementById('sfToast');
+
+    toast.innerHTML = message;
+
+    toast.style.display = 'block';
+    toast.style.opacity = '1';
+
+    toast.style.background = success
+        ? '#22c55e'
+        : '#ef4444';
+
+    toast.style.color = '#fff';
+
+    clearTimeout(window.toastTimer);
+
+    window.toastTimer = setTimeout(() => {
+
+        toast.style.opacity = '0';
+
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 300);
+
+    }, 3000);
+}
+
+function sendRecovery() {
+
+    const email = document
+        .getElementById('recoveryEmail')
+        .value
+        .trim();
+
+    if (!email) {
+
+        showToast(
+            '⚠️ Ingresa un correo válido',
+            false
+        );
+
+        return;
+    }
+
+    const modalElement =
+        document.getElementById('recoveryModal');
+
+    const modal =
+        bootstrap.Modal.getInstance(modalElement);
+
+    if(modal){
+        modal.hide();
+    }
+
+    showToast(
+        '📩 Instrucciones enviadas a: ' + email,
+        true
+    );
+
+    document.getElementById('recoveryEmail').value = '';
+}
+
+async function handleLogin() {
+
+    const user = document
+        .getElementById('loginUser')
+        .value
+        .trim();
+
+    const pass = document
+        .getElementById('loginPass')
+        .value
+        .trim();
+
+    const alertBox =
+        document.getElementById('loginAlert');
+
+    const loginButton =
+        document.querySelector('.btn-sf');
+
+    alertBox.classList.add('d-none');
+    alertBox.innerHTML = '';
+
+    if (!user || !pass) {
+
+        alertBox.innerHTML =
+            'Completa todos los campos';
+
+        alertBox.classList.remove('d-none');
+
+        return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-2"></span>Ingresando...';
+
+    try {
+
+        const response = await fetch(
+            'backend/login.php',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+    correo: user,
+    password: pass
+
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                'Error HTTP: ' + response.status
+            );
+        }
+
+        const data = await response.json();
+
+        console.log(data);
+
+        if (data.success) {
+
+            localStorage.setItem(
+                'usuario',
+                JSON.stringify(data.user)
+            );
+
+            showToast(
+                '✅ Bienvenido ' +
+                data.user.nombre
+            );
+
+            setTimeout(() => {
+
+                if (
+                    data.user.rol &&
+                    data.user.rol.toLowerCase() === 'admin'
+                ) {
+
+                    window.location.href =
+                        'admin/dashboard.php';
+
+                } else {
+
+                    window.location.href =
+                        'cliente/menu.html';
+                }
+
+            }, 1000);
+
+        } else {
+
+            alertBox.innerHTML =
+                data.message ||
+                'Usuario o contraseña incorrectos';
+
+            alertBox.classList.remove('d-none');
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alertBox.innerHTML =
+            'Error de conexión con el servidor';
+
+        alertBox.classList.remove('d-none');
+
+    } finally {
+
+        loginButton.disabled = false;
+
+        loginButton.innerHTML =
+            '<i class="bi bi-box-arrow-in-right me-2"></i>Ingresar';
+    }
+}
+
+document.addEventListener(
+    'keydown',
+    function(e) {
+
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    }
+);
+
+</script>
+ 
+</body>
+</html>
+ 

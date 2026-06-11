@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartFood – Pago</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+
+  <style>
+
+    .pago-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pago-modal-overlay.active {
+      display: flex;
+    }
+
+    .pago-modal {
+      background: #1a1a2e;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 36px;
+      width: 100%;
+      max-width: 460px;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .pago-modal h4 {
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+
+    .pago-modal .form-control,
+    .pago-modal .form-select {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      border-radius: 12px;
+    }
+
+    .pago-modal .form-control::placeholder { color: rgba(255,255,255,0.35); }
+    .pago-modal .form-control:focus { background: rgba(255,255,255,0.1); color: #fff; border-color: var(--sf-orange); box-shadow: none; }
+
+    .pago-modal .form-label { color: rgba(255,255,255,0.7); font-size: .85rem; margin-bottom: 6px; }
+
+    /* Tarjeta visual */
+    .card-visual {
+      background: linear-gradient(135deg, #e8590c, #c44b08);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-visual::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .card-visual .card-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 3px;
+      color: #fff;
+      margin: 12px 0 8px;
+    }
+
+    .card-visual .card-meta {
+      display: flex;
+      justify-content: space-between;
+      color: rgba(255,255,255,0.75);
+      font-size: .8rem;
+    }
+
+    /* Nequi QR simulado */
+    .nequi-box {
+      background: linear-gradient(135deg, #6b21a8, #9333ea);
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .nequi-qr {
+      width: 120px;
+      height: 120px;
+      background: #fff;
+      border-radius: 12px;
+      margin: 0 auto 16px;
+      display: grid;
+      grid-template-columns: repeat(7,1fr);
+      grid-template-rows: repeat(7,1fr);
+      padding: 8px;
+      gap: 2px;
+    }
+
+    .nequi-qr span {
+      background: #1a1a2e;
+      border-radius: 2px;
+    }
+
+    .nequi-numero {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 3px;
+    }
+
+    .nequi-label {
+      color: rgba(255,255,255,0.75);
+      font-size: .85rem;
+      margin-top: 6px;
+    }
+
+    /* Éxito */
+    .success-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .success-overlay.active { display: flex; }
+
+    .success-box {
+      text-align: center;
+      animation: slideUp 0.4s ease;
+    }
+
+    .success-icon {
+      font-size: 5rem;
+      margin-bottom: 16px;
+    }
+
+    .success-box h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .success-box p { color: rgba(255,255,255,0.6); }
+
+    .processing-bar {
+      width: 260px;
+      height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 99px;
+      margin: 20px auto 0;
+      overflow: hidden;
+    }
+
+    .processing-bar-inner {
+      height: 100%;
+      background: var(--sf-orange);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 2s ease;
+    }
+
+  </style>
+
+</head>
+
+<body class="dashboard-body">
+
+<div class="container py-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-white">💳 Finalizar Pedido</h1>
+    <a href="menu.html" class="btn btn-outline-light">← Volver al menú</a>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- RESUMEN -->
+    <div class="col-lg-7">
+      <div class="sf-card p-4">
+        <h4 class="mb-4 text-white">🛒 Resumen del pedido</h4>
+        <div id="checkoutItems"></div>
+      </div>
+    </div>
+
+    <!-- PAGO -->
+    <div class="col-lg-5">
+      <div class="sf-card p-4">
+
+        <h4 class="mb-4 text-white">💰 Información de pago</h4>
+
+        <div class="mb-3">
+          <label class="form-label text-light">Nombre del cliente</label>
+          <input type="text" id="clienteNombre" class="form-control" placeholder="Ej: Andrés Vesga">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-light">Método de pago</label>
+          <select id="metodoPago" class="form-select">
+            <option value="Efectivo">💵 Efectivo</option>
+            <option value="Tarjeta">💳 Tarjeta / PSE</option>
+            <option value="Nequi">📱 Nequi</option>
+          </select>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center my-4">
+          <span class="text-light fs-5">Total</span>
+          <span id="checkoutTotal" class="fs-3 fw-bold text-warning">$0</span>
+        </div>
+
+        <button class="btn btn-sf w-100" onclick="abrirPasarela()">
+          <i class="bi bi-lock-fill me-2"></i>
+          Proceder al pago
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =================== MODAL TARJETA / PSE =================== -->
+<div class="pago-modal-overlay" id="modalTarjeta">
+  <div class="pago-modal">
+
+    <div class="card-visual">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;">SmartFood Pay</span>
+        <i class="bi bi-credit-card-2-front-fill" style="font-size:1.8rem;color:#fff;"></i>
+      </div>
+      <div class="card-number" id="cardNumberDisplay">•••• •••• •••• ••••</div>
+      <div class="card-meta">
+        <span id="cardNameDisplay">NOMBRE TITULAR</span>
+        <span id="cardExpDisplay">MM/AA</span>
+      </div>
+    </div>
+
+    <h4>💳 Pago con Tarjeta / PSE</h4>
+
+    <div class="mb-3">
+      <label class="form-label">Número de tarjeta</label>
+      <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"
+             oninput="formatCardNumber(this)">
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <label class="form-label">Fecha de vencimiento</label>
+        <input type="text" class="form-control" id="cardExp" placeholder="MM/AA" maxlength="5"
+               oninput="formatExp(this)">
+      </div>
+      <div class="col-6">
+        <label class="form-label">CVV</label>
+        <input type="text" class="form-control" id="cardCvv" placeholder="•••" maxlength="3">
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Nombre del titular</label>
+      <input type="text" class="form-control" id="cardName" placeholder="Como aparece en la tarjeta"
+             oninput="document.getElementById('cardNameDisplay').innerText = this.value.toUpperCase() || 'NOMBRE TITULAR'">
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary flex-1" onclick="cerrarModales()">Cancelar</button>
+      <button class="btn btn-sf flex-1" onclick="pagarTarjeta()">
+        <i class="bi bi-lock-fill me-1"></i> Pagar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- =================== MODAL NEQUI =================== -->
+<div class="pago-modal-overlay" id="modalNequi">
+  <div class="pago-modal" style="text-align:center;">
+
+    <h4>📱 Pago con Nequi</h4>
+
+    <div class="nequi-box">
+      <!-- QR simulado con cuadrículas -->
+      <div class="nequi-qr" id="nequiQr"></div>
+      <div class="nequi-numero" id="nequiNumero"></div>
+      <div class="nequi-label">Escanea el QR o transfiere al número</div>
+    </div>
+
+    <p style="color:rgba(255,255,255,0.6);font-size:.9rem;" class="mb-4">
+      Transfiere exactamente <strong class="text-warning" id="nequiTotal"></strong> y luego confirma el pago.
+    </p>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary flex-1" onclick="cerrarModales()">Cancelar</button>
+      <button class="btn btn-sf flex-1" onclick="confirmarPago()">
+        <i class="bi bi-check-circle me-1"></i> Ya transferí
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- =================== OVERLAY ÉXITO =================== -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="success-icon">🎉</div>
+    <h2>¡Pago exitoso!</h2>
+    <p id="successMsg">Tu pedido ha sido registrado</p>
+    <div class="processing-bar">
+      <div class="processing-bar-inner" id="progressBar"></div>
+    </div>
+    <p style="color:rgba(255,255,255,0.4);font-size:.8rem;margin-top:12px;">Redirigiendo al menú...</p>
+  </div>
+</div>
+
+<div id="sfToast"></div>
+
+<script src="../js/cart.js"></script>
+
+<script>
+
+  /* ─── UTILIDADES ─── */
+
+  function formatPrice(v) {
+    return new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP' }).format(v);
+  }
+
+  function showToast(msg, ok = true) {
+    const t = document.getElementById('sfToast');
+    t.innerHTML = msg;
+    t.style.background = ok ? '#22c55e' : '#ef4444';
+    t.style.color = '#fff';
+    t.style.padding = '14px 20px';
+    t.style.borderRadius = '14px';
+    t.style.position = 'fixed';
+    t.style.bottom = '20px';
+    t.style.right = '20px';
+    t.style.zIndex = '9999';
+    t.style.opacity = '1';
+    setTimeout(() => t.style.opacity = '0', 3000);
+  }
+
+  /* ─── RENDERIZAR CHECKOUT ─── */
+
+  function renderCheckout() {
+    const c = document.getElementById('checkoutItems');
+    if (!Cart.items.length) {
+      c.innerHTML = `<div class="text-center py-5"><h5 class="text-light">Tu carrito está vacío</h5><a href="menu.html" class="btn btn-sf mt-3">Ir al menú</a></div>`;
+      return;
+    }
+    c.innerHTML = Cart.items.map(i => `
+      <div class="d-flex align-items-center justify-content-between mb-3 p-3"
+           style="background:rgba(255,255,255,0.03);border-radius:18px;">
+        <div>
+          <h6 class="text-white mb-1">${i.nombre}</h6>
+          <small style="color:rgba(255,255,255,0.6)">Cantidad: ${i.cantidad}</small>
+        </div>
+        <div class="text-warning fw-bold">${formatPrice(i.precio * i.cantidad)}</div>
+      </div>
+    `).join('');
+    document.getElementById('checkoutTotal').innerText = formatPrice(Cart.total());
+  }
+
+  /* ─── ABRIR PASARELA SEGÚN MÉTODO ─── */
+
+  function abrirPasarela() {
+
+    const cliente = document.getElementById('clienteNombre').value.trim();
+    if (!cliente) { showToast('Ingresa el nombre del cliente', false); return; }
+    if (!Cart.items.length) { showToast('El carrito está vacío', false); return; }
+
+    const metodo = document.getElementById('metodoPago').value;
+
+    if (metodo === 'Efectivo') {
+      confirmarPago();
+
+    } else if (metodo === 'Tarjeta') {
+      document.getElementById('modalTarjeta').classList.add('active');
+
+    } else if (metodo === 'Nequi') {
+      generarNequi();
+      document.getElementById('modalNequi').classList.add('active');
+    }
+  }
+
+  function cerrarModales() {
+    document.getElementById('modalTarjeta').classList.remove('active');
+    document.getElementById('modalNequi').classList.remove('active');
+  }
+
+  /* ─── TARJETA: FORMATEO ─── */
+
+  function formatCardNumber(inp) {
+    let v = inp.value.replace(/\D/g,'').substring(0,16);
+    inp.value = v.replace(/(.{4})/g,'$1 ').trim();
+    document.getElementById('cardNumberDisplay').innerText =
+      inp.value || '•••• •••• •••• ••••';
+  }
+
+  function formatExp(inp) {
+    let v = inp.value.replace(/\D/g,'').substring(0,4);
+    if (v.length >= 3) v = v.substring(0,2) + '/' + v.substring(2);
+    inp.value = v;
+    document.getElementById('cardExpDisplay').innerText = inp.value || 'MM/AA';
+  }
+
+  function pagarTarjeta() {
+    const num = document.getElementById('cardNumber').value.replace(/\s/g,'');
+    const exp = document.getElementById('cardExp').value;
+    const cvv = document.getElementById('cardCvv').value;
+    const name = document.getElementById('cardName').value.trim();
+
+    if (num.length < 16) { showToast('Número de tarjeta inválido', false); return; }
+    if (exp.length < 5)  { showToast('Fecha de vencimiento inválida', false); return; }
+    if (cvv.length < 3)  { showToast('CVV inválido', false); return; }
+    if (!name)           { showToast('Ingresa el nombre del titular', false); return; }
+
+    cerrarModales();
+    confirmarPago();
+  }
+
+  /* ─── NEQUI: GENERAR QR SIMULADO ─── */
+
+  function generarNequi() {
+    // QR simulado con patrón aleatorio
+    const qr = document.getElementById('nequiQr');
+    qr.innerHTML = '';
+    const pattern = [
+      1,1,1,0,1,1,1,
+      1,0,1,0,1,0,1,
+      1,1,1,1,0,1,1,
+      0,1,0,1,0,0,1,
+      1,1,1,0,1,1,1,
+      1,0,0,1,0,1,0,
+      1,1,0,0,1,1,1,
+    ];
+    pattern.forEach(cell => {
+      const s = document.createElement('span');
+      if (!cell) s.style.background = 'transparent';
+      qr.appendChild(s);
+    });
+
+    // Número simulado
+    const num = '310 ' + Math.floor(1000000 + Math.random()*9000000);
+    document.getElementById('nequiNumero').innerText = num;
+    document.getElementById('nequiTotal').innerText = formatPrice(Cart.total());
+  }
+
+  /* ─── CONFIRMAR PAGO (todos los métodos llegan aquí) ─── */
+
+  async function confirmarPago() {
+    cerrarModales();
+
+    const payload = {
+      cliente:     document.getElementById('clienteNombre').value.trim(),
+      metodo_pago: document.getElementById('metodoPago').value,
+      total:       Cart.total(),
+      items:       Cart.items
+    };
+
+    try {
+      const res  = await fetch('../backend/crear_pedido.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        mostrarExito(payload.metodo_pago, data.pedido_id);
+        Cart.clear();
+      } else {
+        showToast(data.message || 'Error al crear el pedido', false);
+      }
+
+    } catch (e) {
+      console.error(e);
+      showToast('Error de conexión con el servidor', false);
+    }
+  }
+
+  /* ─── PANTALLA DE ÉXITO ─── */
+
+  function mostrarExito(metodo, pedidoId) {
+    const mensajes = {
+      'Efectivo': `Pedido #${pedidoId} registrado · Paga en caja con efectivo`,
+      'Tarjeta':  `Pedido #${pedidoId} · Pago con tarjeta aprobado ✓`,
+      'Nequi':    `Pedido #${pedidoId} · Transferencia Nequi confirmada ✓`
+    };
+    document.getElementById('successMsg').innerText = mensajes[metodo] || `Pedido #${pedidoId} registrado`;
+    document.getElementById('successOverlay').classList.add('active');
+    setTimeout(() => {
+      document.getElementById('progressBar').style.width = '100%';
+    }, 100);
+    setTimeout(() => {
+      window.location.href = 'menu.html';
+    }, 2500);
+  }
+
+  /* ─── INIT ─── */
+  Cart.load();
+  renderCheckout();
+
+</script>
+
+</body>
+</html>
